@@ -1,0 +1,156 @@
+RESOURCES
+=========
+1. C++ - https://www.youtube.com/watch?v=PakbXnLht1I
+2. JAVA - https://www.youtube.com/watch?v=-RNkWv-d4zM
+
+DESIGN PRINCIPLES
+=================
+1. They helps in making your design simple, robust and extensible.
+2. Design Patterns saves you from reinventing the wheel.
+
+
+SOLID
+=====
+1. Single Responsibility Principle: Any class that you create should have just 1 responsibility.
+	If you are modifying the class for more than one reason, you're breaking this principle.
+
+	Eg: Consider the following API which gets the list of Employee from the database.
+
+		class EmployeeOperations {
+			vector<Employee> getEmployeeList(int companyId) {
+				// Setup database connection
+				// Fetch the employee list.
+			}
+		};
+
+	This API deals with 2 things and breaks the SRP so in order to fix this we need to 
+	delegate the database connection setup to some other class and then just fetch the 
+	employee list from here.
+	
+	class EmployeeDatabaseAccessLayer {
+		bool setUpDatbaseConnectionWithEmployeeDB() {
+			// Setup database connection
+		}
+
+		bool isConnectedToEmployeeDB(){
+			// returns true or false
+		}
+	};
+
+	class EmployeeOperations {
+		vector<Employee> getEmployeeList(int companyId) {
+			// Ensure connection with employee DB
+			// Fetch the employee list.
+		}
+	};
+
+2. Open-Closed Principle: All the classes should be open for extension but closed for modification.
+	When we have to add a new feature, we should be able to do it without modifying the existing code.
+	If I change the existing code, there is a chance that I break the production.
+	It makes us realize two things:
+		a. Avoid Hardcoding.
+		b. Make code modular.
+
+	Eg: Consider a Ingestion Framework: Get data from outside and ingest it in your RDBMS.
+
+		class Ingest {
+			saveData(){
+				// code to save the credit card data
+			}
+		}
+
+		Now we want to ingest the data in some other database(HDFS) as well so that we can apply ML over it. How do we handle it?
+
+		// Abstract Class to Ingest the data having pure virtual function saveData()
+		class Ingest {
+			public saveData()=0;
+		}
+
+		class IngestDataInRDBMS : public Ingest {
+			// This should be inserting data into RDBMS
+			saveData(){
+
+			}
+		}
+
+		class IngestDataInHDFS : public Ingest {
+			// New database ingestion done here
+			saveData(){
+			
+			}
+		}
+
+		// Now if you see, we can insert into new database without touching the old code and this is what O-C-Principle is all about.
+
+3. Liskov Substitution Principle: The object in a program should be replaceable with instances of
+ 	their sub classes without changing the behaviour of program.
+ 	Eg: 
+ 		class A {
+	 		void xyz(){
+	 			// code
+	 		}
+ 		};
+
+ 		class B : public A {
+ 			// Override
+	 		void xyz(){
+	 			// code
+	 		}
+ 		}
+
+ 		class C {
+ 			void abc(A a){
+	 			// code
+	 		}
+ 		};
+
+	LSP says that in class C when you're passing the instance of class A (obj of class A), you can also pass an instance of class B (object of class B) as well. Why? Since class B is derived from class A, it means that B has all the properties of class A so we can use either in class C for an object.
+
+	So, if we write "void abc(A a)" in class C and it breaks, then it means that B is trying
+	to modify the class A in its own implementation which is WRONG. In class B, we should not modify anything for class A. It should not break the existing code.
+
+4. Interface-Segregation Principle: Interface should only have methods which the client needs.
+
+	Eg:
+		class Vehicle {
+			void start() = 0;
+			void stop() = 0;
+			void checkEngine() = 0;
+			void checkRCValidity() = 0;
+			void checkInsurance() = 0;
+		}
+
+	Suppose this abstract class have these many pure virtual functions. All the above methods are relevant to the Vehicle class but are all of these relevant to the Client class which will inherit from the above class? This is the question that we need to ask ourselves.
+	For example, a Bicycle is a vehicle which doesn't need checkEngine() ... so maybe we don't want to put that function there but since it is an abstract class, we will have to override ALL the methods given in the interface. For that, may be we want to have separate abstract classes/Interfaces for Bicycle and other MotorVehicles. Then Bicycle will only have to override what is neceessary and not all the others which it doesn't really need.
+
+		class MotorVehicle {
+			void start() = 0;
+			void stop() = 0;
+			void checkEngine() = 0;
+			void checkRCValidity() = 0;
+			void checkInsurance() = 0;
+		}
+
+		class NonMotorVehicle {
+			void start() = 0;
+			void stop() = 0;
+		}
+
+5. Dependency Inversion Principle: If you have multiple modules in the system, higher level module should not depend on lower level module, but should depend on abstraction.
+	You program to an interface and not an implementation. This helps in making a de-coupled system.
+	Eg: Suppose someone wants ingest data into our system, then they should not be concerned about how we are ingesting the data into HDFS or RDBMS. They just have to call the saveData() method and that would figure out whether we have to insert it into HDFS, or RDMS, etc. The client should not be concerned how to insert the data. They should not be creating an object of the IngestDataInHDFS() or IngestDataInRDBMS() and then call saveData() directly from there. It should only talk with the saveData() of the interface.
+
+		// Abstract Class/Interface to Ingest the data having pure virtual function saveData()
+		class Ingest {
+			public saveData()=0;
+		}
+
+		class IngestDataInRDBMS : public Ingest {
+			saveData(){
+			}
+		}
+
+		class IngestDataInHDFS : public Ingest {
+			saveData(){
+			}
+		}
