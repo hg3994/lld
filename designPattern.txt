@@ -12,3 +12,9 @@ Types:
 2. Behavioural Design Pattern (12)
 3. Structural Design Pattern (8)
 
+
+Singleton -> Limited instances of a class then we use it, ex: Database connection.
+Observer -> Real Time updates in the UI.
+Factory -> Client will us the instances that we make without exposing the creation logic. All instances are created at one place.
+Abstract Factory Pattern -> there is an interface where we make instances of a class. Client can use that interface.
+XX Fasade -> Controller where all the business logic will be there.
